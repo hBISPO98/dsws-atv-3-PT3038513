@@ -1,44 +1,33 @@
+# Importações de bibliotecas e ferramentas necessárias
+from flask import Flask, render_template, session, redirect, url_for, flash
+from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 
-# A very simple Flask Hello World app for you to get started with...
-
-from flask import Flask, redirect, request, make_response, abort
-
+# Inicialização de Flask e definição de chave secreta
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'Chave Forte'
 
-# rota 1: hello world
-@app.route('/')
+bootstrap = Bootstrap(app)
+
+# Criação do formulário e suas definições
+class NameForm(FlaskForm):
+  name = StringField('Qual o seu nome?', validators= [DataRequired()])
+  submit = SubmitField('Enviar')
+
+# Rota função view
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return f'<h1>Hello World!</h1><h2>Disciplina PTBDSWS</h2>'
+  form = NameForm()
+  if form.validate_on_submit():
+    old_name = session.get('name') # antes da primeira submissão
 
-# rota 2: hello name
-@app.route('/user/<name>')
-def user(name):
-    return f'<h1>Hello, {name}!</h1>'
+    # Validação do envio do formulário (PRG)
+    if old_name is not None and old_name != form.name.data:
+      flash('Parece que você alterou seu nome')
+    session['name'] = form.name.data # variável de sessão
+    return redirect(url_for('index'))
 
-# rota 3: contexto de requisição
-@app.route('/contextorequisicao')
-def contexto_requisicao():
-    user_agent = request.headers.get('User-Agent')
-    return f'<p>Your browser is {user_agent}</p>'
-
-# rota 4: status diferente - 400
-@app.route('/codigostatusdiferente')
-def codigo_status_diferente():
-    return '<p>Bad request</p>', 400
-
-# rota 5: objeto resposta
-@app.route('/objetoresposta')
-def objeto_resposta():
-    response = make_response('<h1>This document carries a cookie!</h1>')
-    response.set_cookie('language','pt-BR')
-    return response
-
-# rota 6: redirecionamento para o site IFSP
-@app.route('/ifsp')
-def redirecionar_ifsp():
-    return redirect('https://ptb.ifsp.edu.br/')
-
-# rota 7: cancelamento
-@app.route('/cancelar')
-def cancelar_requisicao():
-    abort(404)
+  # Renderiza a página HTML com os dadso salvos na session
+  return render_template('index.html', form=form, name=session.get('name'))

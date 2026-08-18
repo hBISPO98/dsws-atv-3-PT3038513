@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Contexto da Requisição{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Olá, {{ name }}!</h1>
+</div>
+<h3>Seu navegador é: {{ user_agent }}</h3>
+<h3>O IP do computador remoto é: {{ remote_ip }}</h3>
+<h3>O host da aplicação é: {{ host }}</h3>
+{% endblock %}
